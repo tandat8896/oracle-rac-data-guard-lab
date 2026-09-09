@@ -178,8 +178,14 @@ máy ảo, DBCA tạo `racdb`, VIP lên online, và quá trình trace các lỗi
 `10.10.10.0/24` cho interconnect, `192.168.122.0/24` cho mạng libvirt — và tên host chỉ phân giải
 được qua file `/etc/hosts` của từng node.
 
-Bộ cài Oracle, phần mềm đã stage, file image máy ảo và các file lấy từ `$ORACLE_HOME` đều **không**
-có trong repo này. Giấy phép Oracle Technology Network cấm phân phối lại chúng, nên `root.sh`,
+Phần mềm Oracle trong lab được sử dụng theo **Oracle Technology Network Developer License** —
+giấy phép cho phép dùng miễn phí vào mục đích *developing, testing, prototyping và demonstrating*,
+không dùng cho production, xử lý dữ liệu nghiệp vụ hay môi trường phát triển dùng chung.
+Xem điều khoản đầy đủ tại
+[oracle.com/downloads/licenses/standard-license.html](https://www.oracle.com/downloads/licenses/standard-license.html).
+
+Repo này **không chứa bất kỳ phần mềm Oracle nào**. Bộ cài, phần mềm đã stage, file image máy ảo và
+các file lấy từ `$ORACLE_HOME` đều bị loại, vì giấy phép cấm phân phối lại: `root.sh`,
 `gridSetup.sh`, `runInstaller`, `runcluvfy.sh`, các file response, file `.mk`, file mẫu `init.ora`
-và unit `oracle-ohasd.service` đều bị loại và chặn trong `.gitignore`. Chỉ những cấu hình do lab
-này tự viết ra mới được commit.
+và unit `oracle-ohasd.service` đều được chặn trong `.gitignore`. Chỉ tài liệu, cấu hình và ảnh chụp
+do tác giả tự tạo mới được commit.
