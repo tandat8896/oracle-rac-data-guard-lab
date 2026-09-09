@@ -65,3 +65,11 @@ Thumbs.db
 **/*.mk
 **/cvu_config
 **/orabasetab
+
+# ─── CV cá nhân: giữ local, KHÔNG đẩy lên repo public ───
+CV_*.tex
+cv_*.tex
+CV_*.pdf
+cv_*.pdf
+*.aux
+*.out
