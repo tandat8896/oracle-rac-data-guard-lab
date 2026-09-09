@@ -1,0 +1,67 @@
+# ─── Secrets ───────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+orapw*
+*password*.txt
+
+# ─── Oracle binaries / licensed material (OTN: no redistribution) ───
+stage/
+downloads/
+oracle_install/
+*.rpm
+*.zip
+*.tar
+*.tar.gz
+
+# ─── VM disks & installer images ───────────────────────────
+vm_disks/
+*.qcow2
+*.img
+*.iso
+*.vdi
+*.vmdk
+*.ova
+
+# ─── Oracle runtime artifacts ──────────────────────────────
+*.log
+*.trc
+*.trm
+*.dmp
+*.dump
+diag/
+oradata/
+fast_recovery_area/
+
+# ─── Local agent / editor state ────────────────────────────
+.direnv/
+.cache/
+*.jsonl
+result
+result-*
+
+# ─── Junk ──────────────────────────────────────────────────
+*.bak
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+
+# ─── Oracle-copyrighted files pulled from $ORACLE_HOME / OS ───
+# (OTN license forbids redistribution — keep locally, never commit)
+**/dbs/init.ora
+**/systemd/system/oracle-ohasd.service
+**/root.sh
+**/rootcrs.sh
+**/roothas.sh
+**/gridSetup.sh
+**/runInstaller
+**/runcluvfy.sh
+**/*.rsp
+**/*.mk
+**/cvu_config
+**/orabasetab

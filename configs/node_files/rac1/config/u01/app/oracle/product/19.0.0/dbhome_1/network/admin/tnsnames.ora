@@ -1,0 +1,36 @@
+
+RACDB_S =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = stdby1)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SID = racdb_s)
+    )
+  )
+
+RACDB_S =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = stdby1)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SID = racdb_s)
+    )
+  )
+
+RACDB_S.LOCALDOMAIN =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = stdby1)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SID = racdb_s)
+    )
+  )
+
+RACDB =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = rac-scan)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = racdb.localdomain)
+    )
+  )

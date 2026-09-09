@@ -1,0 +1,10 @@
+NAME              SIZE TYPE MOUNTPOINT
+sr0              1024M rom  
+vda                50G disk 
+├─vda1              1G part /boot
+└─vda2             49G part 
+  ├─ol_rac1-root   44G lvm  /
+  └─ol_rac1-swap    5G lvm  [SWAP]
+vdb                10G disk 
+vdc                30G disk 
+vdd                30G disk 

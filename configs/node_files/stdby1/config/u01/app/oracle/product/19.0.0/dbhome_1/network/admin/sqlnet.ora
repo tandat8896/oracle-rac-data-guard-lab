@@ -1,0 +1,2 @@
+WALLET_LOCATION = (SOURCE = (METHOD = FILE)(METHOD_DATA = (DIRECTORY = /home/oracle/.oracle_wallet/stdby1)))
+SQLNET.WALLET_OVERRIDE = TRUE

@@ -1,0 +1,7 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.122.220  stdby1  stdby1.localdomain
+192.168.122.205  rac1    rac1.localdomain
+192.168.122.46   rac2    rac2.localdomain
+192.168.122.213  rac1-scan  rac1-scan.localdomain
+

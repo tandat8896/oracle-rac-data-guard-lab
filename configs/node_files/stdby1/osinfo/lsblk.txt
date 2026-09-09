@@ -1,0 +1,7 @@
+NAME         SIZE TYPE MOUNTPOINT
+sr0         1024M rom  
+vda           40G disk 
+├─vda1         1G part /boot
+└─vda2        39G part 
+  ├─ol-root 35.1G lvm  /
+  └─ol-swap  3.9G lvm  [SWAP]

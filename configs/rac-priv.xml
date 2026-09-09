@@ -1,0 +1,5 @@
+<network>
+  <name>rac-priv</name>
+  <bridge name='virbr-racpriv' stp='on' delay='0'/>
+  <ip address='10.10.10.1' netmask='255.255.255.0'/>
+</network>
