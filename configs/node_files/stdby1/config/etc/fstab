@@ -10,5 +10,5 @@
 # units generated from this file.
 #
 /dev/mapper/ol-root     /                       xfs     defaults        0 0
-UUID=7a2ff570-9758-44a1-9458-a71e07c45bda /boot                   xfs     defaults        0 0
+UUID=<BOOT_FS_UUID> /boot                   xfs     defaults        0 0
 /dev/mapper/ol-swap     none                    swap    defaults        0 0

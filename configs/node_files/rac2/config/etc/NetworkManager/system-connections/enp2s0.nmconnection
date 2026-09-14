@@ -1,6 +1,6 @@
 [connection]
 id=enp2s0
-uuid=872e4733-ef13-3c66-b3ca-196293ace603
+uuid=<REDACTED_UUID>
 type=ethernet
 autoconnect-priority=-999
 interface-name=enp2s0

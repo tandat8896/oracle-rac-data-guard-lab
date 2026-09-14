@@ -10,6 +10,6 @@
 # units generated from this file.
 #
 /dev/mapper/ol_rac1-root /                       xfs     defaults        0 0
-UUID=64ffb0bc-9e7e-4ba6-8ac7-868f89c896f0 /boot                   xfs     defaults        0 0
+UUID=<BOOT_FS_UUID> /boot                   xfs     defaults        0 0
 /dev/mapper/ol_rac1-swap none                    swap    defaults        0 0
 /swapfile2 none swap sw 0 0

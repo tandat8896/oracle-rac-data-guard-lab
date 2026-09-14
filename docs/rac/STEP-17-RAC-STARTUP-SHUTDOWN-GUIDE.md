@@ -85,3 +85,21 @@ Bên trong DGMGRL, gõ lần lượt các lệnh sau:
    *(Cần thấy `Transport Lag: 0 seconds` và `Apply Lag: 0 seconds`)*
 
 Nếu tất cả đều xanh, xin chúc mừng, hệ thống đã trở lại vòng quay hoàn hảo!
+
+---
+
+## ⚡ TỰ ĐỘNG HOÁ BẰNG SCRIPT TRÊN HOST NIXOS
+
+Nếu không muốn thao tác thủ công từng bước qua SSH, trên Host NixOS đã có sẵn 2 script quản trị tự động theo đúng tiêu chuẩn an toàn:
+
+1. **Tắt an toàn toàn bộ cụm (Oracle RAC + Standby + BigData):**
+   ```bash
+   /home/tandat/Desktop/de_lab/stop_an_toan.sh all
+   ```
+   *Script tự động:* Dừng Observer -> Shutdown database Standby -> Dừng cluster database `racdb` qua `srvctl` -> Tắt VM an toàn và kiểm tra `shut off` qua `virsh list`.
+
+2. **Khởi động an toàn:**
+   ```bash
+   /home/tandat/Desktop/de_lab/start_oracle.sh
+   ```
+   *Script tự động:* Khởi động Primary RAC nodes -> Chờ Clusterware & ASM online -> Khởi động Standby VM & MOUNT instance -> Kiểm tra Listener & Data Guard Broker.

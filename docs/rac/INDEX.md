@@ -16,10 +16,13 @@ Step 08 done: stage Grid/DB software vao /u01
 Step 09 done: Grid Infrastructure + ASM OCRVOTE online
 Step 10 done: Oracle Database home installed on rac1/rac2
 Step 11 done: RAC database racdb active-active tren rac1/rac2
-Step 12 added: Data Guard standby setup guide (chua chay)
-Step 13 added: safe shutdown/startup procedure
-Step 14 added: cold backup VM/file, khong phai RMAN
+Step 12 done: Data Guard physical standby stdby1 (racdb_s) + Broker + FSFO
+Step 13 done: Safe shutdown/startup procedure (stop_an_toan.sh)
+Step 14 done: Cold backup VM/file (sparse disk image + XML)
 Step 15 done: RMAN online backup + validate tren racdb, ghi vao +FRA
+Step 16 done: Khac phuc su co FSFO (ORA-1017 do salt password file, ORA-1033 thieu _DGMGRL)
+Step 17 done: Chuyen doi phan tang mang RFC 1918 (10.10.50.0/24 virbr-rac-pub, SCAN 10.10.50.30:1521, VIPs .21/.22)
+Step 18 done: Thiet lap L4 Zero-Trust Firewall tren Host NixOS (chi mo TCP 1521 vao SCAN & VIPs cho Spark Compute)
 ```
 
 ## Session 2026-05-28
@@ -50,6 +53,28 @@ Step 15 done: RMAN online backup + validate tren racdb, ghi vao +FRA
 - STEP-00-RAC-QUICK-REFERENCE.md: env vars, dang nhap, startup checklist
 - STEP-00-RAC-COMMANDS-EXPLORE.md: lenh kham pha cho grid va oracle user
 - STEP-12-RAC-DATAGUARD-STANDBY.md: huong dan setup Data Guard
+```
+
+## Session 2026-09-14: Network Segregation & BigData L4 Hardening
+
+```text
+[Network Migration RFC 1918]
+- Tach khoi bridge default virbr0 (192.168.122.0/24)
+- Tao bridge virbr-rac-pub (10.10.50.1/24) cho Database Public
+- Gan IP moi cho RAC nodes:
+  * rac1: 10.10.50.11 · VIP: 10.10.50.21 (virbr-rac-pub)
+  * rac2: 10.10.50.12 · VIP: 10.10.50.22 (virbr-rac-pub)
+  * SCAN: 10.10.50.30:1521 (rac-scan.localdomain)
+  * stdby1: 10.10.50.40 (Data Guard Standby)
+- Giu nguyen bridge virbr-racpriv (10.10.10.0/24) MTU 9000 cho Cache Fusion interconnect
+
+[L4 Zero-Trust Firewall (iptables on Host NixOS)]
+- Hook vao systemd.services.libvirtd.postStart tren host NixOS
+- Chuyen tiep stateful ESTABLISHED, RELATED
+- Chi mo duy nhat TCP port 1521 tu BigData Compute (10.10.20.0/24) sang SCAN (10.10.50.30)
+- Mo TCP port 1521 sang RAC VIPs (10.10.50.21, 10.10.50.22) do co che TNS REDIRECT cua Oracle RAC
+- DROP toan bo luu luong con lai tu BigData sang Database Tier (chan tuyet doi SSH port 22 va node IP vat ly)
+- DROP toan bo luu luong tu HDFS Private Storage (10.10.30.0/24) sang Database Tier
 ```
 
 ## Remaining route

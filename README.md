@@ -22,39 +22,65 @@ Video ghi lại kết quả cấu hình của cụm sau khi hoàn thành, kiểm
 
 ---
 
-## Kiến trúc lab
+## Kiến trúc lab & Phân tầng mạng (RFC 1918)
+
+Hệ thống được thiết kế theo kiến trúc **Zero-Trust L3/L4 Network Segregation** trên nền tảng KVM/libvirt (Host NixOS), phân tách độc lập các vùng mạng:
+
+| Phân vùng (Zone) | Bridge ảo | Dải mạng (CIDR) | Giao thức & Cổng mở | Chức năng chính |
+|---|---|---|:---:|---|
+| **Database Public** | `virbr-rac-pub` | `10.10.50.0/24` | **1521 (SQL\*Net)**, 22 | RAC Nodes, Virtual IPs, SCAN Listener, Standby |
+| **Cache Fusion Interconnect** | `virbr-racpriv` | `10.10.10.0/24` | MTU 9000 (Jumbo Frames) | Đồng bộ block RAM giữa 2 node (cô lập 100%) |
+| **BigData Compute** | `virbr-bd-pub` | `10.10.20.0/24` | 7077, 8080, 4040 | Apache Spark / Client (chỉ gọi port 1521 sang DB) |
+| **HDFS Storage** | `virbr-bd-priv` | `10.10.30.0/24` | 9870, 9000, 8485 | Mạng lưu trữ phân tán Hadoop (cách ly hoàn toàn) |
 
 ```text
-                       Máy chủ NixOS (chỉ làm hypervisor)
-                       libvirt / KVM · không cài Oracle trên host
-    ┌──────────────────────────────────────────────────────────────────┐
-    │                                                                  │
-    │   ┌────────────────────┐          ┌────────────────────┐         │
-    │   │  rac1              │          │  rac2              │         │
-    │   │  Oracle Linux      │◄────────►│  Oracle Linux      │         │
-    │   │  Grid 19c + DB 19c │  private │  Grid 19c + DB 19c │         │
-    │   │  racdb1            │ 10.10.10 │  racdb2            │         │
-    │   └─────────┬──────────┘          └──────────┬─────────┘         │
-    │             │                                │                   │
-    │             └───────────┬────────────────────┘                   │
-    │                         ▼                                        │
-    │              ┌──────────────────────┐                            │
-    │              │  Lưu trữ ASM chia sẻ │                            │
-    │              │  +OCRVOTE  (10 GB)   │  raw .img, virtio shared   │
-    │              │  +DATA     (30 GB)   │  tên thiết bị cố định udev │
-    │              │  +FRA      (30 GB)   │                            │
-    │              └──────────┬───────────┘                            │
-    │                         │ redo transport                         │
-    │                         ▼                                        │
-    │              ┌──────────────────────┐                            │
-    │              │  stdby1 (racdb_s)    │  Data Guard physical       │
-    │              │  MOUNTED / MRP       │  standby + observer FSFO   │
-    │              └──────────────────────┘                            │
-    └──────────────────────────────────────────────────────────────────┘
+                     MÁY CHỦ NIXOS (Hypervisor & L3/L4 Core Router)
+    ┌────────────────────────────────────────────────────────────────────────────────────────┐
+    │                                                                                        │
+    │  CỤM BIGDATA COMPUTE (10.10.20.0/24)                                                   │
+    │  [Spark Master / Driver: 10.10.20.10] ──┐                                              │
+    │                                          │                                              │
+    │  TƯỜNG LỬA HOST L4 (iptables)            ▼ TCP :1521 only (Drop SSH 22 & direct node IPs)
+    │  ┌──────────────────────────────────────────────────────────────────────────────────┐  │
+    │  │ ALLOW: 10.10.20.0/24 ──► SCAN (10.10.50.30:1521) & RAC VIPs (.21, .22)           │  │
+    │  │ DROP:  Toàn bộ lưu lượng còn lại sang vùng Database (SSH, node IP vật lý)        │  │
+    │  └───────────────────────────────────────┬──────────────────────────────────────────┘  │
+    │                                          │ 1. Connect :1521                            │
+    │                                          ▼                                             │
+    │  CỤM DATABASE PUBLIC (10.10.50.0/24)                                                   │
+    │  ┌──────────────────────────────────────────────────────────────────────────────────┐  │
+    │  │                  SCAN LISTENER: 10.10.50.30:1521 (rac-scan.localdomain)          │  │
+    │  │                                  │ (2. TNS REDIRECT sang VIP)                    │  │
+    │  │                   ┌──────────────┴──────────────┐                                │  │
+    │  │                   ▼ (Session :1521)             ▼ (Session :1521)                │  │
+    │  │        ┌────────────────────┐        ┌────────────────────┐                      │  │
+    │  │        │ rac1 / racdb1      │        │ rac2 / racdb2      │                      │  │
+    │  │        │ IP: 10.10.50.11    │◄──────►│ IP: 10.10.50.12    │                      │  │
+    │  │        │ VIP: 10.10.50.21   │Intercon│ VIP: 10.10.50.22   │                      │  │
+    │  │        │ Grid 19c + DB 19c  │10.10.10│ Grid 19c + DB 19c  │                      │  │
+    │  │        └─────────┬──────────┘MTU 9000└──────────┬─────────┘                      │  │
+    │  │                  │                              │                                │  │
+    │  │                  └──────────────┬───────────────┘                                │  │
+    │  │                                 ▼                                                │  │
+    │  │                      ┌──────────────────────┐                                    │  │
+    │  │                      │ Lưu trữ ASM chia sẻ  │                                    │  │
+    │  │                      │ +OCRVOTE  (10 GB)    │ raw .img, virtio shared            │  │
+    │  │                      │ +DATA     (30 GB)    │ tên thiết bị cố định bằng udev     │  │
+    │  │                      │ +FRA      (30 GB)    │                                    │  │
+    │  │                      └──────────┬───────────┘                                    │  │
+    │  │                                 │ Redo Transport (Thread 1 + Thread 2)           │  │
+    │  │                                 ▼                                                │  │
+    │  │                      ┌──────────────────────┐                                    │  │
+    │  │                      │ stdby1 (racdb_s)     │ Data Guard Physical Standby        │  │
+    │  │                      │ IP: 10.10.50.40      │ FSFO Observer tự động failover     │  │
+    │  │                      │ MOUNTED / MRP online │                                    │  │
+    │  │                      └──────────────────────┘                                    │  │
+    │  └──────────────────────────────────────────────────────────────────────────────────┘  │
+    └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Cơ sở dữ liệu RAC `racdb` chạy active-active (hai instance `racdb1` / `racdb2`) với SCAN listener,
-VIP, và một PDB (`pdb1`) chứa schema HR.
+Cơ sở dữ liệu RAC `racdb` chạy active-active (hai instance `racdb1` / `racdb2`) với Single Client Access Name (SCAN),
+Virtual IP (VIP) và Pluggable Database `pdb1` chứa schema phục vụ query tuning và ứng dụng.
 
 ---
 
@@ -174,9 +200,11 @@ máy ảo, DBCA tạo `racdb`, VIP lên online, và quá trình trace các lỗi
 ## Bảo mật và bản quyền
 
 Đây là môi trường lab. Toàn bộ thông tin đăng nhập trong các tài liệu đã được thay bằng
-`<REDACTED_PASSWORD>`. Các địa chỉ IP đều thuộc dải private RFC 1918 dùng cho lab —
-`10.10.10.0/24` cho interconnect, `192.168.122.0/24` cho mạng libvirt — và tên host chỉ phân giải
-được qua file `/etc/hosts` của từng node.
+`<REDACTED_PASSWORD>`. Các địa chỉ IP đều thuộc dải private RFC 1918 được phân tầng nghiêm ngặt —
+`10.10.50.0/24` cho Database Public (`virbr-rac-pub`), `10.10.10.0/24` cho mạng Private Cache Fusion
+(Jumbo Frame MTU 9000), và kiểm soát truy cập từ Compute sang Database thông qua tường lửa L4 Zero-Trust
+(chỉ mở duy nhất TCP port 1521 vào SCAN IP `10.10.50.30` và các RAC VIPs; chặn hoàn toàn SSH và truy cập
+trực tiếp vào node IP vật lý).
 
 Phần mềm Oracle trong lab được sử dụng theo **Oracle Technology Network Developer License** —
 giấy phép cho phép dùng miễn phí vào mục đích *developing, testing, prototyping và demonstrating*,
