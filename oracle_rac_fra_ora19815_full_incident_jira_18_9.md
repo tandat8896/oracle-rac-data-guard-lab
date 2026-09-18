@@ -1,6 +1,6 @@
-Được anh. Đây là **toàn bộ chuỗi điều tra FRA/ORA-19815 mình đã chạy từ
-đầu tới thời điểm hiện tại**, em ghi cả **lệnh + kết quả** để anh lưu
-làm incident timeline.
+# Báo cáo Điều tra và Xử lý Sự cố FRA / ORA-19815 (Oracle RAC 19c)
+
+Tài liệu ghi lại toàn bộ chuỗi điều tra, phân tích nguyên nhân gốc rễ (Root Cause Analysis - RCA), các bước remediation giải phóng dung lượng FRA và quy trình chuẩn hóa vận hành trên hệ thống Oracle RAC 19c hai node.
 
 ## 1. Kiểm tra FRA tổng thể
 
@@ -25,7 +25,7 @@ Kết quả lần gần nhất:
     FROM v$recovery_area_usage
     ORDER BY percent_space_used DESC;
 
-Kết quả ban đầu mình ghi nhận:
+Kết quả ghi nhận ban đầu:
 
     ARCHIVED LOG    ~47.38%   reclaimable 0%   228 files
     BACKUP PIECE    ~17.30%
@@ -310,8 +310,6 @@ Kết quả:
     Backup Set    7     16-JUN-26
      Backup Piece 7     16-JUN-26         +FRA/RACDB/AUTOBACKUP/2026_06_16/...
 
-Đúng theo output anh gửi.
-
 → Chỉ có hai backup sets được report obsolete.
 
 ------------------------------------------------------------------------
@@ -553,7 +551,7 @@ Kết quả:
 
 ## Trạng thái investigation hiện tại
 
-Mình **chưa DELETE, chưa CROSSCHECK, chưa BACKUP, chưa thay parameter**.
+Giai đoạn này **chưa thực hiện DELETE, chưa CROSSCHECK, chưa BACKUP, chưa thay đổi parameter**.
 Tới đây toàn bộ gần như là read-only investigation.
 
 Evidence hiện tại đang chỉ về:
@@ -576,16 +574,7 @@ Evidence hiện tại đang chỉ về:
        ↓
     → nghi mạnh archive backup/cleanup lifecycle chưa được vận hành
 
-**Lệnh kế tiếp mà em vừa định cho anh chạy nhưng anh CHƯA chạy là:**
-
-    SELECT thread#, sequence#, applied, deleted, backup_count
-    FROM v$archived_log
-    WHERE is_recovery_dest_file='YES'
-      AND deleted='NO'
-    ORDER BY first_time
-    FETCH FIRST 10 ROWS ONLY;
-
-## Vậy mình đánh dấu checkpoint ở **đây**. Lát trace tiếp thì bắt đầu đúng query này, không cần chạy lại đống trên.
+------------------------------------------------------------------------
 
 # 27. Tiếp tục trace archive log ở primary
 
