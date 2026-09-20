@@ -77,3 +77,8 @@ cv_*.pdf
 # ─── Ghi chú riêng / audit nội bộ: KHÔNG đẩy lên GitHub ───
 LICENSE-AUDIT-CHECK.md
 *AUDIT*.md
+
+# ─── Reports & generated artifacts ───
+**/docs/query-tuning/awr/
+docs/query-tuning/awr/
+*.html
